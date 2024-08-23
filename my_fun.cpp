@@ -2,7 +2,7 @@
 
 unsigned long control_Time;
 unsigned long time_start_f_cmd_set = 0;
-struct can_frame canMsg,canMsg_read;
+struct can_frame canMsg, canMsg_read;
 float error, integral, derivative;
 unsigned long dt = 12;
 
@@ -135,7 +135,7 @@ void control_R_motor(void) {
   if (f - 0 < 0.001) {
     I_mA = 0;
   }
-  
+
   canMsg.data[1] = (I_mA >> (8 * 0)) & 0xff;
   canMsg.data[0] = (I_mA >> (8 * 1)) & 0xff;
   mcp2515.sendMessage(&canMsg);
@@ -209,6 +209,10 @@ void handleSerialCommand(String command) {
   }
   else if (command.startsWith("s")) {
     flag = 's';
+    canMsg.data[1] = (0 >> (8 * 0)) & 0xff;
+    canMsg.data[0] = (0 >> (8 * 1)) & 0xff;
+    mcp2515.sendMessage(&canMsg);
+    delay(100);
     asm volatile ("  jmp 0");
   }
   else if (command.startsWith("t")) {
