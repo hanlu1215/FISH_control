@@ -2,7 +2,7 @@
 
 unsigned long control_Time;
 unsigned long time_start_f_cmd_set = 0;
-struct can_frame canMsg;
+struct can_frame canMsg,canMsg_read;
 float error, integral, derivative;
 unsigned long dt = 12;
 
@@ -109,13 +109,13 @@ void print_run_msg(void) {
 }
 
 void update_R_measure(void) {
-  if (canMsg.can_id == 0x201) {
-    speed_measure = canMsg.data[2];
+  if (canMsg_read.can_id == 0x201) {
+    speed_measure = canMsg_read.data[2];
     speed_measure <<= 8;
-    speed_measure |= canMsg.data[3];
-    angle_measure = canMsg.data[0];
+    speed_measure |= canMsg_read.data[3];
+    angle_measure = canMsg_read.data[0];
     angle_measure <<= 8;
-    angle_measure |= canMsg.data[1];
+    angle_measure |= canMsg_read.data[1];
   }
 }
 
@@ -135,6 +135,7 @@ void control_R_motor(void) {
   if (f - 0 < 0.001) {
     I_mA = 0;
   }
+  
   canMsg.data[1] = (I_mA >> (8 * 0)) & 0xff;
   canMsg.data[0] = (I_mA >> (8 * 1)) & 0xff;
   mcp2515.sendMessage(&canMsg);
@@ -195,6 +196,7 @@ void stopPump() {
   Serial.println("Pump set to standby.");
 }
 
+
 void handleSerialCommand(String command) {
   Serial.print("command:");
   Serial.println(command);
@@ -219,7 +221,8 @@ void handleSerialCommand(String command) {
     } else {
       Serial.println("Invalid position. Use t1000 to t2000.");
     }
-  } else if (command.startsWith("c")) {
+  }
+  else if (command.startsWith("c")) {
     String action = command.substring(1); // 提取指令内容
     processPumpAction(action); // 处理指令
   }

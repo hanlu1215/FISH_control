@@ -9,7 +9,7 @@
 // 定义常量、结构体、全局变量等（如果需要）
 extern unsigned long control_Time;
 extern unsigned long time_start_f_cmd_set;
-extern struct can_frame canMsg;
+extern struct can_frame canMsg,canMsg_read;
 extern float error, integral, derivative;
 extern unsigned long dt;
 extern MCP2515 mcp2515;
