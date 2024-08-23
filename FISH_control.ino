@@ -1,17 +1,18 @@
 #include "my_fun.h"
 
 MCP2515 mcp2515(2); //R 电机CAN通讯模块的连接引脚
-const int IN1_PIN = 3; // 控制引脚 IN1
-const int IN2_PIN = 4; // 控制引脚 IN2
+const int IN1_PIN = 5; // 控制引脚 IN1
+const int IN2_PIN = 6; // 控制引脚 IN2
 const int Servo_PIN = 9; // 舵机连接到引脚 9
 
 
 Servo myServo;         // 创建一个舵机对象
-int servoPosition = 0; // 舵机的位置
+int servoPosition = 90; // 舵机的位置
 
 void setup() {
   setup_fun();
   myServo.attach(Servo_PIN);   // 将舵机连接到引脚 9
+  
   pinMode(IN1_PIN, OUTPUT); // 设置 IN1 引脚为输出
   pinMode(IN2_PIN, OUTPUT); // 设置 IN2 引脚为输出
   // 初始设置抽水机为待机状态
@@ -26,7 +27,7 @@ void loop(void) {
   if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) update_R_measure();
   update_f();
   control_R_motor();
-  myServo.write(servoPosition);     // 设置舵机位置
+ // myServo.write(servoPosition);     // 设置舵机位置
   
   if (Serial.available() > 0) {
     command = Serial.readStringUntil('\n');

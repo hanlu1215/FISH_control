@@ -213,7 +213,7 @@ void handleSerialCommand(String command) {
     int pos = command.substring(1).toInt(); // 提取命令中的数字
     if (pos >= 1000 && pos <= 2000) {   // 确保位置在合理范围内
       servoPosition = map(pos, 1000, 2000, 0, 180); // 将 1000-2000 映射到 0-180 度
-
+      myServo.write(servoPosition);     // 设置舵机位置
       Serial.print("Servo moved to: ");
       Serial.println(servoPosition);
     } else {
