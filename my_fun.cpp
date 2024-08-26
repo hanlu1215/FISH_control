@@ -36,15 +36,15 @@ void setup_fun(void) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
   delay(20);
-  Serial.println("");
-  Serial.println("------ Ready to run-------");
-  Serial.println("f100 to set f1.0 hz");
-  Serial.println("s to restart");
-  Serial.println("command end with newline");
   while (flag != 'f') {
     delay(5);
     if (Serial.available() > 0) {
       command = Serial.readStringUntil('\n');
+      Serial.println("");
+      Serial.println("------ Ready to run-------");
+      Serial.println("f100 to set f1.0 hz");
+      Serial.println("s to restart");
+      Serial.println("command end with newline");
       Serial.print("command:");
       Serial.println(command);
       if (command.startsWith("f")) {
