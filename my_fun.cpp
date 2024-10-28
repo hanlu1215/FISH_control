@@ -142,11 +142,7 @@ void control_R_motor(void) {
 }
 // 根据指令内容执行操作
 void processPumpAction(String action) {
-  if (action.equals("d")) {
-    stopPump(); // 待机
-  } else if (action.equals("s")) {
-    brakePump(); // 刹车
-  } else if (action.startsWith("+") || action.startsWith("-")) {
+  if (action.startsWith("+") || action.startsWith("-")) {
     int pwmValue = action.substring(1).toInt(); // 提取 PWM 占空比
     if (action.startsWith("+")) {
       setPumpForward(pwmValue); // 正转
@@ -154,83 +150,70 @@ void processPumpAction(String action) {
       setPumpReverse(pwmValue); // 反转
     }
   } else {
-    Serial.println("Invalid command. Use d, s, +<pwm>, or -<pwm>.");
+    Serial.println("Invalid command. Use c+<pwm>, or c-<pwm>.");
   }
 }
 
 // 设置抽水机正转
 void setPumpForward(int pwmValue) {
-  if (pwmValue < 0 || pwmValue > 255) {
-    Serial.println("Invalid PWM value. Must be between 0 and 255.");
+  if (pwmValue < 0 || pwmValue > 100) {
+    Serial.println("Invalid PWM value. Must be between 0 and 100.");
     return;
   }
-  analogWrite(IN1_PIN, pwmValue); // 设置正转 PWM 占空比
-  digitalWrite(IN2_PIN, LOW);     // IN2 设为 LOW
+  analogWrite(IN2_PIN, map(pwmValue, 0, 100, 0, 255)); // 设置正转 PWM 占空比
+  digitalWrite(IN1_PIN, LOW);     // IN2 设为 LOW
   Serial.print("Pump set to forward with PWM: ");
   Serial.println(pwmValue);
 }
 
 // 设置抽水机反转
 void setPumpReverse(int pwmValue) {
-  if (pwmValue < 0 || pwmValue > 255) {
-    Serial.println("Invalid PWM value. Must be between 0 and 255.");
+  if (pwmValue < 0 || pwmValue > 100) {
+    Serial.println("Invalid PWM value. Must be between 0 and 100.");
     return;
   }
-  digitalWrite(IN1_PIN, LOW);     // IN1 设为 LOW
-  analogWrite(IN2_PIN, pwmValue); // 设置反转 PWM 占空比
+  digitalWrite(IN1_PIN, HIGH);     // IN1 设为 LOW
+  analogWrite(IN2_PIN, map(pwmValue, 0, 100, 0, 255)); // 设置反转 PWM 占空比
   Serial.print("Pump set to reverse with PWM: ");
   Serial.println(pwmValue);
 }
 
-// 设置抽水机刹车
-void brakePump() {
-  digitalWrite(IN1_PIN, HIGH);    // 设置 IN1 为 HIGH
-  digitalWrite(IN2_PIN, HIGH);    // 设置 IN2 为 HIGH
-  Serial.println("Pump set to brake.");
-}
 
-// 设置抽水机待机
-void stopPump() {
-  digitalWrite(IN1_PIN, LOW);     // 设置 IN1 为 LOW
-  digitalWrite(IN2_PIN, LOW);     // 设置 IN2 为 LOW
-  Serial.println("Pump set to standby.");
-}
 
 
 void handleSerialCommand(String command) {
   Serial.print("command:");
   Serial.println(command);
   if (command.startsWith("f")) {
-    flag = 'f';
+    flag = 'f';//设置摆动频率
     f_cmd = (command.substring(1).toInt()) / 100.0;
     time_start_f_cmd_set = millis();
     Serial.print("New f : ");
     Serial.println(f_cmd);
   }
   else if (command.startsWith("s")) {
-    flag = 's';
+    flag = 's';//电机停止，并且重启系统
     canMsg.data[1] = (0 >> (8 * 0)) & 0xff;
     canMsg.data[0] = (0 >> (8 * 1)) & 0xff;
     mcp2515.sendMessage(&canMsg);
     delay(100);
     asm volatile ("  jmp 0");
   }
-  else if (command.startsWith("t")) {
+  else if (command.startsWith("t")) {//转弯控制 t1000   t2000
     int pos = command.substring(1).toInt(); // 提取命令中的数字
     if (pos >= 1000 && pos <= 2000) {   // 确保位置在合理范围内
-      servoPosition = map(pos, 1000, 2000, 0, 180); // 将 1000-2000 映射到 0-180 度
-      myServo.write(servoPosition);     // 设置舵机位置
+      myServo.writeMicroseconds(pos);     // 设置舵机位置
       Serial.print("Servo moved to: ");
-      Serial.println(servoPosition);
+      Serial.println(pos);
     } else {
       Serial.println("Invalid position. Use t1000 to t2000.");
     }
   }
-  else if (command.startsWith("c")) {
+  else if (command.startsWith("c")) {//沉浮控制 c+100  c-50
     String action = command.substring(1); // 提取指令内容
     processPumpAction(action); // 处理指令
   }
   else {
-    Serial.println("Invalid command. Use format: tXXXX");
+    Serial.println("Invalid command.");
   }
 }
