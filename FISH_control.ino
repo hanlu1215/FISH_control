@@ -1,7 +1,7 @@
 #include "my_fun.h"
 MCP2515 mcp2515(2); //R 电机CAN通讯模块的连接引脚
 const int IN1_PIN = 5; // 控制引脚 IN1
-const int IN2_PIN = 6; // 控制引脚 IN2
+const int IN2_PIN = 6; // 控制引脚 IN2  PWM
 const int Servo_PIN = 9; // 舵机连接到引脚 9
 
 Servo myServo;         // 创建一个舵机对象
